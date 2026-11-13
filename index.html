@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Nuevo Comienzo - Orientación para Personas Retornadas</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel CDN to compile JSX directly in browser -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #111827 !important;
+        font-size: 11pt;
+        line-height: 1.4;
+      }
+      nav, header button, footer, .no-print, button, .action-buttons {
+        display: none !important;
+      }
+      .plan-container {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+      .action-step-item {
+        border: 1px solid #d1d5db !important;
+        padding: 10px 14px !important;
+        margin-bottom: 10px !important;
+        border-radius: 4px !important;
+        page-break-inside: avoid;
+      }
+      .print-disclaimer {
+        margin-top: 24px;
+        padding-top: 10px;
+        border-top: 1px dashed #9ca3af;
+        font-size: 8.5pt;
+        color: #4b5563;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- DATOS Y CATÁLOGOS ---
+    const DEPARTAMENTOS = [
+      { id: 'alta_verapaz', label: 'Alta Verapaz' },
+      { id: 'baja_verapaz', label: 'Baja Verapaz' },
+      { id: 'chimaltenango', label: 'Chimaltenango' },
+      { id: 'chiquimula', label: 'Chiquimula' },
+      { id: 'el_progreso', label: 'El Progreso' },
+      { id: 'escuintla', label: 'Escuintla' },
+      { id: 'guatemala', label: 'Guatemala' },
+      { id: 'huehuetenango', label: 'Huehuetenango' },
+      { id: 'izabal', label: 'Izabal' },
+      { id: 'jalapa', label: 'Jalapa' },
+      { id: 'jutiapa', label: 'Jutiapa' },
+      { id: 'peten', label: 'Petén' },
+      { id: 'quetzaltenango', label: 'Quetzaltenango' },
+      { id: 'quiche', label: 'Quiché' },
+      { id: 'retalhuleu', label: 'Retalhuleu' },
+      { id: 'sacatepequez', label: 'Sacatepéquez' },
+      { id: 'san_marcos', label: 'San Marcos' },
+      { id: 'santa_rosa', label: 'Santa Rosa' },
+      { id: 'solola', label: 'Sololá' },
+      { id: 'suchitepequez', label: 'Suchitepéquez' },
+      { id: 'totonicapan', label: 'Totonicapán' },
+      { id: 'zacapa', label: 'Zacapa' },
+      { id: 'no_sabe', label: 'Aún no lo sé' }
+    ];
+
+    const SKILLS_BY_AREA = {
+      construccion: [
+        'Manejo de herramientas manuales y eléctricas',
+        'Lectura de planos y medidas',
+        'Protocolos de seguridad en obra (EPP)',
+        'Acabados (tabla yeso, pintura o mampostería)',
+        'Coordinación de cuadrillas de trabajo'
+      ],
+      restaurantes: [
+        'Preparación y mise en place de alimentos',
+        'Normas de higiene y manipulación de alimentos',
+        'Operación de cocinas industriales',
+        'Control de porciones y reducción de mermas',
+        'Atención ágil al cliente y servicio de sala'
+      ],
+      hoteleria: [
+        'Técnicas de limpieza y desinfección profunda',
+        'Atención cortés y servicio al huésped',
+        'Organización de habitaciones y suministros',
+        'Gestión de lavandería industrial',
+        'Reporte ágil de mantenimiento básico'
+      ],
+      agricultura: [
+        'Preparación de suelos, siembra y trasplante',
+        'Manejo de sistemas de riego y cosecha',
+        'Operación de maquinaria y herramientas agrícolas',
+        'Selección y empaque de productos perecederos',
+        'Adaptabilidad a trabajo de campo intensivo'
+      ],
+      transporte: [
+        'Conducción responsable y mantenimiento preventivo',
+        'Recepción, estiba y despacho de mercadería',
+        'Operación de transpaletas o montacargas',
+        'Planificación de rutas de entrega local',
+        'Control físico de inventario'
+      ],
+      comercio: [
+        'Atención personalizada y asesoría comercial',
+        'Manejo de caja y cuadre de valores',
+        'Exhibición y rotación de producto en tienda',
+        'Reabastecimiento de stock y pedidos',
+        'Resolución de quejas y fidelización'
+      ],
+      mantenimiento: [
+        'Diagnóstico de averías mecánicas y eléctricas',
+        'Fontanería básica e instalación de tuberías',
+        'Electricidad residencial y cambio de accesorios',
+        'Mantenimiento preventivo de instalaciones',
+        'Uso seguro de herramientas de medición'
+      ],
+      cuidado: [
+        'Asistencia en movilidad y actividades cotidianas',
+        'Acompañamiento empático y escucha activa',
+        'Control de horarios de medicamentos',
+        'Nutrición asistida y dietas especiales',
+        'Primeros auxilios básicos'
+      ],
+      tecnologia: [
+        'Uso de ofimática (procesadores de texto y hojas de cálculo)',
+        'Soporte técnico básico y periféricos',
+        'Digitalización y archivo de documentación',
+        'Atención digital y correos corporativos'
+      ],
+      otra: [
+        'Puntualidad y disciplina laboral comprobada',
+        'Capacidad de aprendizaje rápido de tareas',
+        'Resolución práctica de problemas cotidianos',
+        'Trabajo en equipo y comunicación colaborativa'
+      ]
+    };
+
+    const INTECAP_DIRECTORY = [
+      {
+        id: 'cert-intecap',
+        titulo: 'Certificación de Competencias Laborales',
+        cat: 'Certificación',
+        desc: 'Reconocimiento oficial de las habilidades que ya dominas por experiencia de trabajo, sin requerir títulos técnicos previos.',
+        requisitos: ['Experiencia previa demostrable en el oficio', 'DPI o documento de identificación', 'Evaluación práctica en taller'],
+        enlace: 'https://intecap.edu.gt/',
+        estado: 'Verificado oficial',
+        nota: 'La oferta de ocupaciones evaluables varía según el centro de capacitación regional.'
+      },
+      {
+        id: 'becas-retornados',
+        titulo: 'Atención y Becas para Personas Retornadas',
+        cat: 'Becas y Ayuda',
+        desc: 'Orientación y facilidades de formación técnica modular para guatemaltecos retornados.',
+        requisitos: ['Constancia oficial de retorno (IGM o entidad migratoria)', 'DPI vigente', 'Consultar convocatoria vigente'],
+        enlace: 'https://intecap.edu.gt/becasretornados/',
+        estado: 'Verificado oficial',
+        nota: 'La disponibilidad de cupos y exoneraciones depende del ciclo y centro local.'
+      },
+      {
+        id: 'formacion-oficios',
+        titulo: 'Capacitación Técnica y Cursos de Emprendimiento',
+        cat: 'Formación',
+        desc: 'Cursos técnicos y talleres de gestión básica para fortalecer negocios o ingresar a nuevas ramas productivas.',
+        requisitos: ['Edad mínima según curso (16-18 años)', 'DPI o certificado de nacimiento', 'Inscripción en sede'],
+        enlace: 'https://intecap.edu.gt/',
+        estado: 'Verificado oficial',
+        nota: 'Se recomienda visitar la delegación departamental para conocer las fechas de inicio.'
+      }
+    ];
+
+    const ENTREPRENEURSHIP_STEPS = [
+      {
+        n: 1,
+        title: 'Identifica qué sabes hacer y qué problema resuelves',
+        detalle: 'Comienza por oficios y habilidades en las que ya tienes destreza. Evita emprender solo por novedad sin dominar la técnica.',
+        alerta: 'Riesgo: Copiar negocios ajenos sin conocer los costos ni los clientes reales.'
+      },
+      {
+        n: 2,
+        title: 'Define tu producto o servicio concreto',
+        detalle: 'Especialízate al principio en una oferta estrella clara (ejemplo: pastelería artesanal bajo pedido o reparaciones eléctricas a domicilio).',
+        alerta: 'Riesgo: Intentar vender demasiadas cosas a la vez sin consolidar una.'
+      },
+      {
+        n: 3,
+        title: 'Valida con clientes reales antes de invertir',
+        detalle: 'Habla con al menos 5 o 10 vecinos, comercios o posibles compradores. Pregúntales qué compran hoy y si pagarían por tu solución.',
+        alerta: 'Riesgo: Asumir que todos comprarán solo por entusiasmo personal.'
+      },
+      {
+        n: 4,
+        title: 'Calcula costos fijos, variables y tu salario',
+        detalle: 'Suma materiales, energía, desgaste de herramientas y un pago asignado a tus propias horas trabajadas.',
+        alerta: 'Riesgo: Olvidar tu propio tiempo de trabajo, lo que genera pérdidas ocultas.'
+      },
+      {
+        n: 5,
+        title: 'Organiza tus ventas y finanzas diarias',
+        detalle: 'Lleva un cuaderno o registro diario de ingresos y egresos. Separa tajantemente el dinero del negocio del gasto familiar.',
+        alerta: 'Riesgo: Usar el dinero de las ventas para gastos del hogar sin reponer inventario.'
+      },
+      {
+        n: 6,
+        title: 'Financiamiento prudente y responsable',
+        detalle: 'Inicia con ahorros propios, herramientas ya adquiridas o encargos con anticipo. Si exploras créditos, evalúa la tasa de interés anual y evita deudas informales.',
+        alerta: 'Riesgo: Créditos con intereses abusivos o cobros diarios que ahogan el flujo de caja.'
+      }
+    ];
+
+    function App() {
+      const [screen, setScreen] = useState('welcome'); // welcome | quiz | skills | plan | intecap | emprender
+      const [route, setRoute] = useState('trabajar');
+      
+      // Respuestas del cuestionario
+      const [answers, setAnswers] = useState({
+        area: 'construccion',
+        tiempo: '3_a_5',
+        actividades: '',
+        herramientas: '',
+        responsabilidades: ['operacion_tecnica'],
+        idiomas: ['espanol'],
+        evidencias: 'no',
+        departamento: 'guatemala',
+        apoyo: ['reconocer_habilidades', 'certificar_competencias'],
+        empleoTipo: 'misma_area',
+        interesCert: 'si',
+        ideaNegocio: 'si',
+        negocioDesc: '',
+        clientes: '',
+        recursos: ['experiencia', 'herramientas'],
+        necesidadAprender: ['calcular_costos']
+      });
+
+      // Habilidades seleccionadas
+      const [userSkills, setUserSkills] = useState([]);
+      const [newCustomSkill, setNewCustomSkill] = useState('');
+
+      // Hoja de idea de negocio
+      const [worksheet, setWorksheet] = useState({
+        nombreIdea: '',
+        cliente: '',
+        propuesta: '',
+        costosFijos: '',
+        costosVariables: '',
+        precioSugerido: '',
+        primerPaso: ''
+      });
+
+      // Tareas del plan de acción
+      const [tasks, setTasks] = useState([]);
+
+      // Iniciar cuestionario según ruta
+      const handleStart = (selectedRoute) => {
+        setRoute(selectedRoute);
+        setScreen('quiz');
+      };
+
+      // Generar habilidades sugeridas al completar cuestionario
+      const handleFinishQuiz = () => {
+        const areaKey = answers.area || 'otra';
+        const suggested = SKILLS_BY_AREA[areaKey] || SKILLS_BY_AREA['otra'];
+        setUserSkills(suggested);
+        setScreen('skills');
+      };
+
+      // Generar Plan de Acción determinista
+      const handleGeneratePlan = () => {
+        const generated = [];
+
+        // Paso base de habilidades
+        generated.push({
+          id: 'p1',
+          titulo: 'Consolidar tu resumen de habilidades declaradas',
+          desc: `Tu experiencia acumulada (${answers.tiempo === 'mas_5' ? 'más de 5 años' : 'experiencia previa'}) en el área de ${answers.area} representa una base sólida para el mercado guatemalteco.`,
+          motivo: 'Porque organizar por escrito tus destrezas te da seguridad al presentarte ante un empleador o cliente.',
+          completada: false
+        });
+
+        // Caso de inglés
+        if (answers.idiomas.includes('ingles')) {
+          generated.push({
+            id: 'p-ingles',
+            titulo: 'Resaltar el dominio práctico de inglés laboral',
+            desc: 'Indica tu comprensión de vocabulario técnico, atención de órdenes o servicio al cliente en inglés.',
+            motivo: 'Porque declaraste haber utilizado el idioma inglés en tu trabajo, lo que abre opciones en turismo, servicios y supervisión.',
+            completada: false
+          });
+        }
+
+        // Si no tiene evidencias laborales formales
+        if (answers.evidencias === 'no' || answers.evidencias === 'no_estoy_seguro') {
+          generated.push({
+            id: 'p-evidencias',
+            titulo: 'Armar un portafolio de evidencias prácticas alternativas',
+            desc: 'Recopila fotografías de proyectos ejecutados, herramientas que dominas y nombres de personas que puedan dar fe de tu trabajo.',
+            motivo: 'Porque señalaste no contar con documentos formales; las evidencias visuales y referencias demuestran tu pericia.',
+            completada: false
+          });
+        }
+
+        // Ruta Trabajar
+        if (route === 'trabajar') {
+          if (answers.interesCert === 'si' || answers.apoyo.includes('certificar_competencias')) {
+            generated.push({
+              id: 'p-intecap-cert',
+              titulo: 'Acercarse a la sede INTECAP de ' + (DEPARTAMENTOS.find(d => d.id === answers.departamento)?.label || 'tu departamento'),
+              desc: 'Solicita información sobre el programa de Certificación de Competencias Laborales para formalizar tu oficio.',
+              motivo: 'Porque buscas certificar lo que ya sabes hacer para acceder a mejores oportunidades laborales.',
+              completada: false
+            });
+          }
+
+          generated.push({
+            id: 'p-target-jobs',
+            titulo: 'Mapear 5 posibles empleadores o proyectos locales',
+            desc: 'Identifica contratistas, talleres o empresas locales en tu municipio para entregar tu currículo o portafolio personal.',
+            motivo: 'Porque focalizar tu búsqueda regionalmente optimiza tus tiempos y costos de transporte.',
+            completada: false
+          });
+        }
+
+        // Ruta Emprender
+        if (route === 'emprender') {
+          generated.push({
+            id: 'p-validar-clientes',
+            titulo: 'Entrevistar a 5 clientes potenciales en tu comunidad',
+            desc: `Pregunta directamente a personas que encajen con tu perfil (${answers.clientes || 'posibles compradores'}) qué necesitan y cuánto pagan hoy en día.`,
+            motivo: 'Porque validar la necesidad en la vida real evita perder capital antes de comprar insumos o herramientas.',
+            completada: false
+          });
+
+          generated.push({
+            id: 'p-costeo',
+            titulo: 'Completar la hoja de costeo y precio unitario',
+            desc: 'Calcula tus costos fijos y variables asegurando un margen que incluya el valor de tu propio salario diario.',
+            motivo: 'Porque fijar precios al azar suele derivar en trabajar sin obtener beneficio económico real.',
+            completada: false
+          });
+
+          generated.push({
+            id: 'p-finanzas-prudente',
+            titulo: 'Definir el capital inicial sin endeudamiento riesgoso',
+            desc: 'Empieza con las herramientas y ahorros que ya tienes disponibles. Si consideras crédito, compara tasas y rechaza cobros diarios informales.',
+            motivo: 'Porque proteger la economía de tu hogar requiere no asumir deudas con intereses abusivos.',
+            completada: false
+          });
+        }
+
+        setTasks(generated);
+        setScreen('plan');
+      };
+
+      const toggleSkill = (skill) => {
+        if (userSkills.includes(skill)) {
+          setUserSkills(userSkills.filter(s => s !== skill));
+        } else {
+          setUserSkills([...userSkills, skill]);
+        }
+      };
+
+      const addCustomSkill = () => {
+        if (newCustomSkill.trim() && !userSkills.includes(newCustomSkill.trim())) {
+          setUserSkills([...userSkills, newCustomSkill.trim()]);
+          setNewCustomSkill('');
+        }
+      };
+
+      const toggleTask = (taskId) => {
+        setTasks(tasks.map(t => t.id === taskId ? { ...t, completada: !t.completada } : t));
+      };
+
+      // Resetear datos
+      const handleReset = () => {
+        if (window.confirm('¿Deseas reiniciar el cuestionario y borrar los datos locales de esta sesión?')) {
+          setScreen('welcome');
+          setUserSkills([]);
+          setTasks([]);
+        }
+      };
+
+      return (
+        <div class="flex flex-col min-h-screen">
+          {/* Top Bar Institucional / Académica */}
+          <header class="bg-indigo-900 text-white shadow-md no-print">
+            <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center space-x-3 cursor-pointer" onClick={() => setScreen('welcome')}>
+                <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center font-bold text-lg">M</div>
+                <div>
+                  <h1 class="text-base font-bold tracking-tight">Mi Nuevo Comienzo</h1>
+                  <p class="text-xs text-indigo-200">Orientación para personas guatemaltecas retornadas</p>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2 text-xs">
+                {screen !== 'welcome' && (
+                  <>
+                    <button onClick={() => setScreen('plan')} class="px-3 py-1.5 rounded bg-indigo-800 hover:bg-indigo-700 transition">Mi Plan</button>
+                    <button onClick={() => setScreen('emprender')} class="px-3 py-1.5 rounded bg-indigo-800 hover:bg-indigo-700 transition">Ruta Emprender</button>
+                    <button onClick={() => setScreen('intecap')} class="px-3 py-1.5 rounded bg-indigo-800 hover:bg-indigo-700 transition">Recursos INTECAP</button>
+                    <button onClick={handleReset} class="px-2 py-1.5 rounded bg-red-700 hover:bg-red-600 transition text-red-100">Reiniciar</button>
+                  </>
+                )}
+              </div>
+            </div>
+          </header>
+
+          {/* Banner de Aviso Académico */}
+          <div class="bg-amber-100 border-b border-amber-300 text-amber-900 text-xs px-4 py-2 text-center font-medium">
+            Prototipo de orientación comunitaria. No afiliado oficialmente a INTECAP. Verifique programas, becas y requisitos directamente en los centros institucionales.
+          </div>
+
+          {/* Contenedor Principal */}
+          <main class="flex-grow max-w-5xl w-full mx-auto p-4 md:p-6">
+            
+            {/* PANTALLA 1: BIENVENIDA */}
+            {screen === 'welcome' && (
+              <div class="max-w-2xl mx-auto my-8 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-10 text-center">
+                <span class="inline-block px-3 py-1 bg-indigo-50 text-indigo-700 font-semibold text-xs rounded-full uppercase tracking-wider mb-4">
+                  Tu experiencia tiene valor en Guatemala
+                </span>
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Reconoce tus habilidades y define tus siguientes pasos</h2>
+                <p class="text-slate-600 leading-relaxed mb-8">
+                  El trabajo, esfuerzo y disciplina que aprendiste durante tu tiempo fuera son capacidades reales para construir un nuevo camino en tu comunidad.
+                  Esta herramienta te ayudará a ordenar tu experiencia laboral y crear un plan de acción concreto.
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto mb-8">
+                  <button 
+                    onClick={() => handleStart('trabajar')}
+                    class="p-5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 hover:bg-indigo-600 hover:text-white transition group text-left">
+                    <span class="block text-lg font-bold text-indigo-950 group-hover:text-white mb-1">Deseo Trabajar</span>
+                    <span class="text-xs text-slate-600 group-hover:text-indigo-100">Identificar empleos, ordenar mi currículo y certificar mis competencias técnicas.</span>
+                  </button>
+
+                  <button 
+                    onClick={() => handleStart('emprender')}
+                    class="p-5 rounded-xl border-2 border-emerald-600 bg-emerald-50/50 hover:bg-emerald-600 hover:text-white transition group text-left">
+                    <span class="block text-lg font-bold text-emerald-950 group-hover:text-white mb-1">Deseo Emprender</span>
+                    <span class="text-xs text-slate-600 group-hover:text-emerald-100">Crear un pequeño negocio, validar con clientes, costear precios y buscar formación.</span>
+                  </button>
+                </div>
+
+                <p class="text-xs text-slate-400">
+                  No solicitamos tu nombre, DPI ni datos migratorios sensibles. Tus respuestas permanecen únicamente en este navegador.
+                </p>
+              </div>
+            )}
+
+            {/* PANTALLA 2: DIAGNÓSTICO GUIADO */}
+            {screen === 'quiz' && (
+              <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+                  <div>
+                    <span class="text-xs font-bold uppercase text-indigo-600 tracking-wider">Cuestionario de diagnóstico</span>
+                    <h2 class="text-xl font-bold text-slate-900">
+                      Ruta seleccionada: <span class="capitalize text-indigo-700">{route}</span>
+                    </h2>
+                  </div>
+                  <button onClick={() => setScreen('welcome')} class="text-xs text-slate-400 hover:text-slate-600">Cambiar ruta</button>
+                </div>
+
+                <div class="space-y-6">
+                  {/* Q02: Área */}
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-800 mb-2">1. ¿En qué área trabajaste principalmente en Estados Unidos?</label>
+                    <select 
+                      value={answers.area} 
+                      onChange={(e) => setAnswers({...answers, area: e.target.value})}
+                      class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                      <option value="construccion">Construcción y estructuras</option>
+                      <option value="restaurantes">Restaurantes, alimentos y cocina</option>
+                      <option value="hoteleria">Hotelería y servicios de limpieza</option>
+                      <option value="agricultura">Agricultura, siembra y cosecha</option>
+                      <option value="transporte">Transporte, bodega y logística</option>
+                      <option value="comercio">Comercio, ventas y atención de tiendas</option>
+                      <option value="mantenimiento">Mantenimiento, fontanería y electricidad</option>
+                      <option value="cuidado">Cuidado y asistencia de personas</option>
+                      <option value="tecnologia">Tecnología y apoyo en oficina</option>
+                      <option value="otra">Otra actividad</option>
+                    </select>
+                  </div>
+
+                  {/* Q04: Tiempo */}
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-800 mb-2">2. ¿Cuánto tiempo aproximado trabajaste en esa área?</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { id: 'menos_1', label: '< 1 año' },
+                        { id: '1_a_2', label: '1 a 2 años' },
+                        { id: '3_a_5', label: '3 a 5 años' },
+                        { id: 'mas_5', label: 'Más de 5 años' }
+                      ].map(item => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setAnswers({...answers, tiempo: item.id})}
+                          class={`py-2 px-3 text-xs font-semibold rounded-lg border text-center transition ${answers.tiempo === item.id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'}`}>
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Q05: Herramientas */}
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-800 mb-1">3. ¿Qué herramientas, equipos o maquinaria dominas?</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ejemplo: Sierra circular, montacargas, cocina industrial, multímetro..."
+                      value={answers.herramientas}
+                      onChange={(e) => setAnswers({...answers, herramientas: e.target.value})}
+                      class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Q07: Idiomas */}
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-800 mb-2">4. ¿Qué idiomas utilizabas en el trabajo?</label>
+                    <div class="flex flex-wrap gap-2">
+                      {[
+                        { id: 'espanol', label: 'Español' },
+                        { id: 'ingles', label: 'Inglés' },
+                        { id: 'maya', label: 'Idioma Maya' }
+                      ].map(lang => {
+                        const checked = answers.idiomas.includes(lang.id);
+                        return (
+                          <button
+                            key={lang.id}
+                            type="button"
+                            onClick={() => {
+                              const updated = checked ? answers.idiomas.filter(l => l !== lang.id) : [...answers.idiomas, lang.id];
+                              setAnswers({...answers, idiomas: updated});
+                            }}
+                            class={`px-3 py-1.5 text-xs rounded-full font-medium border transition ${checked ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                            {checked ? '✓ ' : '+ '}{lang.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Q08: Evidencias */}
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-800 mb-1">5. ¿Tienes constancias o comprobantes formales de trabajo?</label>
+                    <p class="text-xs text-slate-500 mb-2">No necesitas subir nada. Es para sugerir la mejor forma de presentar tu experiencia.</p>
+                    <div class="grid grid-cols-3 gap-2">
+                      {[
+                        { id: 'si', label: 'Sí cuento con constancias' },
+                        { id: 'no', label: 'No tengo constancias' },
+                        { id: 'no_estoy_seguro', label: 'No estoy seguro' }
+                      ].map(ev => (
+                        <button
+                          key={ev.id}
+                          type="button"
+                          onClick={() => setAnswers({...answers, evidencias: ev.id})}
+                          class={`p-2 text-xs font-semibold rounded-lg border text-center transition ${answers.evidencias === ev.id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                          {ev.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Q09: Departamento */}
+                  <div>
+                    <label class="block text-sm font-semibold text-slate-800 mb-2">6. ¿En qué departamento de Guatemala buscas oportunidades?</label>
+                    <select 
+                      value={answers.departamento} 
+                      onChange={(e) => setAnswers({...answers, departamento: e.target.value})}
+                      class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                      {DEPARTAMENTOS.map(dep => (
+                        <option key={dep.id} value={dep.id}>{dep.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* PREGUNTAS CONDICIONALES DE RUTA */}
+                  {route === 'trabajar' ? (
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 space-y-4">
+                      <h3 class="text-sm font-bold text-indigo-900">Opciones de empleo</h3>
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">¿Qué tipo de puesto te gustaría encontrar?</label>
+                        <select 
+                          value={answers.empleoTipo} 
+                          onChange={(e) => setAnswers({...answers, empleoTipo: e.target.value})}
+                          class="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs">
+                          <option value="misma_area">En la misma área donde ya tengo experiencia</option>
+                          <option value="otra_area">Deseo capacitarme y cambiar de área</option>
+                          <option value="no_se">Aún lo estoy evaluando</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">¿Te gustaría certificar tus competencias laborales en INTECAP?</label>
+                        <div class="flex gap-2">
+                          {['si', 'no'].map(c => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => setAnswers({...answers, interesCert: c})}
+                              class={`flex-1 py-1.5 text-xs font-semibold rounded-lg border uppercase transition ${answers.interesCert === c ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300'}`}>
+                              {c}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 space-y-4">
+                      <h3 class="text-sm font-bold text-emerald-900">Opciones de emprendimiento</h3>
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">¿Tienes ya una idea de negocio en mente?</label>
+                        <input 
+                          type="text" 
+                          placeholder="Ejemplo: Taller de herrería, panadería tradicional, carpintería..."
+                          value={answers.negocioDesc}
+                          onChange={(e) => setAnswers({...answers, negocioDesc: e.target.value})}
+                          class="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">¿A quiénes planeas venderles?</label>
+                        <input 
+                          type="text" 
+                          placeholder="Ejemplo: Vecinos del barrio, pequeños talleres, restaurantes locales..."
+                          value={answers.clientes}
+                          onChange={(e) => setAnswers({...answers, clientes: e.target.value})}
+                          class="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div class="pt-4 flex justify-between items-center border-t border-slate-200">
+                    <button onClick={() => setScreen('welcome')} class="text-xs font-semibold text-slate-500 hover:text-slate-800">
+                      ← Cancelar
+                    </button>
+                    <button 
+                      onClick={handleFinishQuiz}
+                      class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg shadow-sm transition">
+                      Continuar al Perfil de Habilidades →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* PANTALLA 3: CATÁLOGO Y EDICIÓN DE HABILIDADES */}
+            {screen === 'skills' && (
+              <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                <div class="mb-6">
+                  <span class="text-xs font-bold uppercase text-indigo-600 tracking-wider">Habilidades Declaradas</span>
+                  <h2 class="text-2xl font-bold text-slate-900 mt-1">Confirma y personaliza lo que sabes hacer</h2>
+                  <p class="text-xs text-slate-500 mt-1">
+                    Selecciona las destrezas que mejor describen tu capacidad real. Puedes quitar sugerencias o escribir habilidades personalizadas.
+                  </p>
+                </div>
+
+                <div class="space-y-2 mb-6">
+                  {userSkills.map((skill, index) => (
+                    <div key={index} class="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <span class="text-xs font-medium text-slate-800">✓ {skill}</span>
+                      <button 
+                        onClick={() => toggleSkill(skill)}
+                        class="text-xs text-red-500 hover:text-red-700 px-2 py-1">
+                        Quitar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div class="flex gap-2 mb-8">
+                  <input 
+                    type="text" 
+                    placeholder="Agregar otra habilidad práctica..."
+                    value={newCustomSkill}
+                    onChange={(e) => setNewCustomSkill(e.target.value)}
+                    class="flex-grow p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <button 
+                    onClick={addCustomSkill}
+                    class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-lg transition">
+                    + Agregar
+                  </button>
+                </div>
+
+                <div class="flex justify-between items-center border-t border-slate-200 pt-4">
+                  <button onClick={() => setScreen('quiz')} class="text-xs font-semibold text-slate-500 hover:text-slate-800">
+                    ← Volver a preguntas
+                  </button>
+                  <button 
+                    onClick={handleGeneratePlan}
+                    class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg shadow-sm transition">
+                    Generar Mi Plan de Acción →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* PANTALLA 4: PLAN DE ACCIÓN PERSONALIZADO (PRINT FRIENDLY) */}
+            {screen === 'plan' && (
+              <div class="plan-container max-w-3xl mx-auto space-y-6">
+                
+                {/* Header de Resultados */}
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                  <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-4">
+                    <div>
+                      <span class="text-xs font-bold uppercase text-indigo-600 tracking-wider">Plan de Acción Personal</span>
+                      <h2 class="text-2xl font-bold text-slate-900">Ruta orientativa para {route === 'trabajar' ? 'Empleo Formal' : 'Emprendimiento Sostenible'}</h2>
+                      <p class="text-xs text-slate-500 mt-0.5">
+                        Departamento: <strong class="capitalize text-slate-700">{DEPARTAMENTOS.find(d => d.id === answers.departamento)?.label || 'Guatemala'}</strong> | Fecha de generación: {new Date().toLocaleDateString('es-GT')}
+                      </p>
+                    </div>
+                    <div class="action-buttons flex gap-2">
+                      <button 
+                        onClick={() => window.print()}
+                        class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 transition">
+                        🖨️ Imprimir / Guardar en PDF
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Resumen de competencias declaradas */}
+                  <div class="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <h3 class="text-xs font-bold uppercase tracking-wide text-slate-700 mb-2">Competencias Prácticas Declaradas:</h3>
+                    <div class="flex flex-wrap gap-1.5">
+                      {userSkills.map((s, i) => (
+                        <span key={i} class="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 text-xs rounded-md font-medium">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tareas del Plan */}
+                  <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">Pasos recomendados para iniciar:</h3>
+                  <div class="space-y-3">
+                    {tasks.map(task => (
+                      <div 
+                        key={task.id} 
+                        class={`action-step-item p-4 rounded-xl border transition ${task.completada ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-200 hover:border-indigo-200'}`}>
+                        <div class="flex items-start gap-3">
+                          <input 
+                            type="checkbox" 
+                            checked={task.completada} 
+                            onChange={() => toggleTask(task.id)}
+                            class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                          <div class="flex-grow">
+                            <h4 class={`text-sm font-bold ${task.completada ? 'line-through text-slate-500' : 'text-slate-900'}`}>{task.titulo}</h4>
+                            <p class="text-xs text-slate-600 mt-1 leading-relaxed">{task.desc}</p>
+                            <div class="mt-2.5 inline-block px-2.5 py-1 bg-amber-50 border border-amber-200 rounded text-amber-900 text-xs">
+                              <strong>Por qué se sugiere:</strong> {task.motivo}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Disclaimer de impresión */}
+                  <div class="print-disclaimer">
+                    <p>Aviso: Este documento es el resultado de un ejercicio de orientación participativa en el marco de la Maestría en Consejería Comunitaria. No garantiza contratos laborales, no certifica formalmente habilidades por sí mismo ni otorga líneas de crédito. Para consultas institucionales oficiales acérquese a INTECAP.</p>
+                  </div>
+                </div>
+
+                {/* Acceso a módulos complementarios */}
+                <div class="no-print grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button 
+                    onClick={() => setScreen('intecap')}
+                    class="p-4 bg-white border border-slate-200 rounded-xl hover:border-indigo-400 text-left transition shadow-sm">
+                    <span class="block text-sm font-bold text-indigo-900 mb-1">🏛️ Directorio de Recursos INTECAP</span>
+                    <span class="text-xs text-slate-600">Revisa requisitos de certificación laboral y consulta de becas oficiales para retornados.</span>
+                  </button>
+
+                  <button 
+                    onClick={() => setScreen('emprender')}
+                    class="p-4 bg-white border border-slate-200 rounded-xl hover:border-emerald-400 text-left transition shadow-sm">
+                    <span class="block text-sm font-bold text-emerald-900 mb-1">💼 Ruta y Hoja de Emprendimiento</span>
+                    <span class="text-xs text-slate-600">Aprende la metodología de 6 pasos y calcula costos reales de tu idea de negocio.</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* PANTALLA 5: DIRECTORIO INTECAP AUDITABLE */}
+            {screen === 'intecap' && (
+              <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+                  <div>
+                    <span class="text-xs font-bold uppercase text-indigo-600 tracking-wider">Directorio Institucional</span>
+                    <h2 class="text-2xl font-bold text-slate-900">Programas de Referencia en INTECAP</h2>
+                  </div>
+                  <button onClick={() => setScreen('plan')} class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+                    ← Volver a Mi Plan
+                  </button>
+                </div>
+
+                <div class="space-y-4 mb-6">
+                  {INTECAP_DIRECTORY.map(res => (
+                    <div key={res.id} class="p-5 rounded-xl border border-slate-200 bg-slate-50/50">
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800">
+                          {res.cat}
+                        </span>
+                        <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          ✓ {res.estado}
+                        </span>
+                      </div>
+                      <h3 class="text-base font-bold text-slate-900 mb-1">{res.titulo}</h3>
+                      <p class="text-xs text-slate-600 leading-relaxed mb-3">{res.desc}</p>
+                      
+                      <div class="bg-white p-3 rounded-lg border border-slate-200 mb-3 text-xs">
+                        <strong class="text-slate-800 block mb-1">Requisitos generales constatados:</strong>
+                        <ul class="list-disc list-inside text-slate-600 space-y-0.5">
+                          {res.requisitos.map((rq, idx) => <li key={idx}>{rq}</li>)}
+                        </ul>
+                      </div>
+
+                      <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span class="text-slate-400 italic">{res.nota}</span>
+                        <a 
+                          href={res.enlace} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          class="font-semibold text-indigo-600 hover:text-indigo-800 underline">
+                          Visitar portal oficial INTECAP ↗
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* PANTALLA 6: RUTA DE EMPRENDIMIENTO Y HOJA DE NEGOCIO */}
+            {screen === 'emprender' && (
+              <div class="max-w-3xl mx-auto space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                  <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+                    <div>
+                      <span class="text-xs font-bold uppercase text-emerald-600 tracking-wider">Educación Financiera y Gestión</span>
+                      <h2 class="text-2xl font-bold text-slate-900">Ruta de 6 Pasos para Emprender con Prudencia</h2>
+                    </div>
+                    <button onClick={() => setScreen('plan')} class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">
+                      ← Volver a Mi Plan
+                    </button>
+                  </div>
+
+                  <div class="space-y-4 mb-8">
+                    {ENTREPRENEURSHIP_STEPS.map(st => (
+                      <div key={st.n} class="flex gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+                        <div class="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm flex-shrink-0">
+                          {st.n}
+                        </div>
+                        <div>
+                          <h3 class="text-sm font-bold text-slate-900 mb-1">{st.title}</h3>
+                          <p class="text-xs text-slate-600 leading-relaxed mb-2">{st.detalle}</p>
+                          <span class="inline-block text-xs font-medium text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            {st.alerta}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Hoja de Idea de Negocio Editable */}
+                  <div class="border-t border-slate-200 pt-6">
+                    <h3 class="text-lg font-bold text-slate-900 mb-1">Hoja de Trabajo de tu Idea de Negocio</h3>
+                    <p class="text-xs text-slate-500 mb-4">Usa estos campos para aterrizar los números antes de comprar materiales o invertir dinero.</p>
+
+                    <div class="space-y-4">
+                      <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Nombre o producto principal:</label>
+                        <input 
+                          type="text" 
+                          placeholder="Ejemplo: Venta y reparación de cancelería de aluminio"
+                          value={worksheet.nombreIdea}
+                          onChange={(e) => setWorksheet({...worksheet, nombreIdea: e.target.value})}
+                          class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"
+                        />
+                      </div>
+
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label class="block text-xs font-bold text-slate-700 mb-1">Costos Fijos Mensuales (Luz, transporte, alquiler):</label>
+                          <input 
+                            type="text" 
+                            placeholder="Ejemplo: Q500 en transporte y energía"
+                            value={worksheet.costosFijos}
+                            onChange={(e) => setWorksheet({...worksheet, costosFijos: e.target.value})}
+                            class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <label class="block text-xs font-bold text-slate-700 mb-1">Costos Variables (Material por unidad + tu tiempo):</label>
+                          <input 
+                            type="text" 
+                            placeholder="Ejemplo: Q120 materiales + Q80 mano de obra propia"
+                            value={worksheet.costosVariables}
+                            onChange={(e) => setWorksheet({...worksheet, costosVariables: e.target.value})}
+                            class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">Primer paso a realizar esta semana (sin gastar dinero):</label>
+                        <input 
+                          type="text" 
+                          placeholder="Ejemplo: Platicar con 3 contratistas conocidos para ofrecer mis servicios"
+                          value={worksheet.primerPaso}
+                          onChange={(e) => setWorksheet({...worksheet, primerPaso: e.target.value})}
+                          class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </main>
+
+          {/* Footer Académico */}
+          <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 no-print">
+            <p>Prototipo Funcional | Maestría en Consejería Comunitaria — Universidad del Valle de Guatemala</p>
+            <p class="mt-0.5">Propuesta orientada a la reintegración digna y reconocimiento de competencias laborales.</p>
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
